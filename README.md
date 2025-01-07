@@ -29,7 +29,11 @@ mv .env.example .env
 
 ```bash
 npm start
+npm dev #with hot reload
 ```
+
+
+
 
 The sample app will be served at `localhost:3000`.
 
