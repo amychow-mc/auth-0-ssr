@@ -1,29 +1,18 @@
 var router = require("express").Router();
-const knex = require('knex')(require('./knexfile').development);
-// const dbUser = {
-//   user_id: "456671",
-//   nickname: "csamyphew2",
-//   email: "amy.chow+123@masterconcept.ai",
-// };
+const knex = require("knex")(require("../database/knexfile").development);
 
-// Middleware to check basic auth
-const checkBasicAuth = (req, res, next) => {
+// Middleware to check m2m text token auth
+const checkM2MTokenAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    res.setHeader("WWW-Authenticate", "Basic");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Authentication required" });
   }
 
-  const base64Credentials = authHeader.split(" ")[1];
-  const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
-  const [username, password] = credentials.split(":");
+  const token = authHeader.split(" ")[1];
 
-  if (
-    username !== process.env.API_USERNAME ||
-    password !== process.env.API_PASSWORD
-  ) {
-    return res.status(403).json({ error: "Invalid credentials" });
+  if (token !== process.env.M2M_TOKEN_SECRET) {
+    return res.status(403).json({ error: "Invalid token" });
   }
 
   next();
@@ -44,92 +33,103 @@ router.get("/profile", function (req, res, next) {
   });
 });
 
-// Protected API endpoint that requires basic auth
-router.post("/api/data", async function (req, res) {
-  const { email } = req.body;
-
-  console.log(`[API-DATA] Data request by ${req.headers.authorization}`);
-  try {
-    const user = await knex('users').where({ email }).first();
-    if (user && !user.is_migrated) {
-      return res.json(user);
-    }
-    return res.json({ error: "access denied" });
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 // New endpoint to check if a user exists by email
-router.post("/api/check-user-by-email", async function (req, res) {
-  const { email } = req.body;
+router.post(
+  "/api/check-user-by-email",
+  checkM2MTokenAuth,
+  async function (req, res) {
+    const { email } = req.body;
 
-  if (!email) {
-    console.log(`[CHECK-USER-BY-EMAIL] Email is missing in the request.`);
-    return res.status(400).json({ error: "Email is required" });
-  }
-
-  try {
-    const user = await knex('users').where({ email }).first();
-    if (user) {
-      console.log(`[CHECK-USER-BY-EMAIL] User found: ${JSON.stringify(user)}`);
-      return res.json({ message: "User exists", user });
-    } else {
-      console.log(`[CHECK-USER-BY-EMAIL] User not found for email: ${email}`);
-      return res.status(404).json({ error: "User not found" });
+    if (!email) {
+      console.log(`[CHECK-USER-BY-EMAIL] Email is missing in the request.`);
+      return res.status(400).json({ error: "Email is required" });
     }
-  } catch (error) {
-    console.error("Error checking user by email:", error);
-    return res.status(500).json({ error: "Internal server error" });
+
+    try {
+      const user = await knex("users").where({ email }).first();
+      if (user) {
+        console.log(
+          `[CHECK-USER-BY-EMAIL] User found: ${JSON.stringify(user)}`
+        );
+        return res.json({ message: "User exists", user });
+      } else {
+        console.log(`[CHECK-USER-BY-EMAIL] User not found for email: ${email}`);
+        return res.status(404).json({ error: "User not found" });
+      }
+    } catch (error) {
+      console.error("Error checking user by email:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   }
-});
+);
 
 // New endpoint to update user password (No hashing for testing)
-router.post("/api/update-password", async function (req, res) {
-  const { email, password } = req.body;
+router.post(
+  "/api/update-password",
+  checkM2MTokenAuth,
+  async function (req, res) {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email and password are required' });
-  }
-
-  try {
-    const user = await knex('users').where({ email }).first();
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and password are required" });
     }
 
-    await knex('users').where({ email }).update({ password });
-    return res.json({ success: true, message: 'Password updated successfully' });
-  } catch (error) {
-    console.error("Error updating password:", error);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+    try {
+      const user = await knex("users").where({ email }).first();
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
 
-// New endpoint to check if a user exists based on client ID
-router.post("/api/check-user", checkBasicAuth, async function (req, res) {
-  const { clientId } = req.body;
-
-  if (!clientId) {
-    console.log(`[CHECK-USER] Client ID is missing in the request.`);
-    return res.status(400).json({ error: "Client ID is required" });
-  }
-
-  try {
-    const user = await knex('users').where({ user_id: clientId }).first();
-    if (user) {
-      console.log(`[CHECK-USER] User found: ${JSON.stringify(user)}`);
-      await knex('users').where({ user_id: clientId }).update({ is_migrated: true });
-      return res.json({ message: "User exists", user });
-    } else {
-      console.log(`[CHECK-USER] User not found for Client ID: ${clientId}`);
-      return res.status(404).json({ error: "User not found" });
+      await knex("users").where({ email }).update({ password });
+      return res.json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
     }
-  } catch (error) {
-    console.error("Error checking user by client ID:", error);
-    return res.status(500).json({ error: "Internal server error" });
   }
-});
+);
+
+// New endpoint to check if a user exists based on email and password
+router.post(
+  "/api/check-user-by-credentials",
+  checkM2MTokenAuth,
+  async function (req, res) {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      console.log(
+        `[CHECK-USER-CREDENTIALS] Email and password are missing in the request.`
+      );
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    try {
+      const user = await knex("users").where({ email }).first();
+      if (user && user.password === password) {
+        console.log(
+          `[CHECK-USER-CREDENTIALS] User found: ${JSON.stringify(user)}`
+        );
+        return res.json({ message: "User exists", user });
+      } else {
+        console.log(
+          `[CHECK-USER-CREDENTIALS] Invalid credentials for email: ${email}`
+        );
+        return res.status(404).json({ error: "User not found" });
+      }
+    } catch (error) {
+      console.error("Error checking user credentials:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 module.exports = router;

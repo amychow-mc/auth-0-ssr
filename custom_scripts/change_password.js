@@ -7,6 +7,7 @@ function changePassword(email, newPassword, callback) {
   console.log(`[changePassword] Checking user existence for email: ${email}`);
   console.log(`new password: ${newPassword}`);
 
+  // Get Auth0 "Username-Password-Authentication" database user id
   const getUserOptions = {
     url: `https://${auth0Domain}/api/v2/users-by-email`,
     headers: {
@@ -51,7 +52,7 @@ function changePassword(email, newPassword, callback) {
 
       console.log(`[changePassword] User found with ID: ${userId}`);
 
-      // Proceed with password change
+      // Update Auth0 "Username-Password-Authentication" database user password
       const options = {
         url: `https://${auth0Domain}/api/v2/users/${userId}`,
         headers: {
