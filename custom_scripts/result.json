@@ -1,0 +1,46 @@
+[
+    {
+        "created_at": "2025-01-16T03:43:05.782Z",
+        "email": "amy.chow+123@masterconcept.ai",
+        "email_verified": false,
+        "identities": [
+            {
+                "connection": "Username-Password-Authentication",
+                "user_id": "678880497af57d5f753a1130",
+                "provider": "auth0",
+                "isSocial": false
+            }
+        ],
+        "name": "amy.chow+123@masterconcept.ai",
+        "nickname": "amy.chow+123",
+        "picture": "https://s.gravatar.com/avatar/36693b3d69ec9b8bca0a63055673dddf?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Fam.png",
+        "updated_at": "2025-01-16T03:43:05.783Z",
+        "user_id": "auth0|678880497af57d5f753a1130"
+    },
+    {
+        "created_at": "2025-01-08T09:13:15.631Z",
+        "email": "amy.chow+123@masterconcept.ai",
+        "identities": [
+            {
+                "connection": "demo-db",
+                "provider": "auth0",
+                "user_id": "456671",
+                "isSocial": false
+            }
+        ],
+        "name": "amy.chow+123@masterconcept.ai",
+        "nickname": "csamyphew2",
+        "picture": "https://s.gravatar.com/avatar/36693b3d69ec9b8bca0a63055673dddf?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Fam.png",
+        "updated_at": "2025-01-08T09:13:17.033Z",
+        "user_id": "auth0|456671",
+        "user_metadata": {
+            "isExistingUser": true,
+            "isFromThirdPartyIdp": true,
+            "is_new_user": false,
+            "last_login_country": "Hong Kong"
+        },
+        "last_ip": "202.64.44.178",
+        "last_login": "2025-01-08T09:13:15.628Z",
+        "logins_count": 1
+    }
+]
