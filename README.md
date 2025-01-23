@@ -29,7 +29,7 @@ mv .env.example .env
 
 ```bash
 npm start
-npm dev #with hot reload
+npm run dev #with hot reload
 ```
 
 The sample app will be served at `localhost:3000`.
@@ -44,5 +44,7 @@ docker-compose up
 5. Rum migration
 For the first time, run the following to create user table
 ``` bash
+cd /database
 npx knex migrate:latest
+npx knex seed:run
 ```
